@@ -1,0 +1,20 @@
+.venv/
+__pycache__/
+.ipynb_checkpoints/
+
+# Local datasets and Kaggle archives
+data-science-bowl-2018/
+
+# Training outputs
+models/
+logs/
+executed_notebooks/
+*.h5
+*.tfevents.*
+
+# Generated submissions
+submission*.csv
+
+# OS/editor artifacts
+.DS_Store
+._*
