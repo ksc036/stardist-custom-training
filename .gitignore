@@ -4,6 +4,8 @@ __pycache__/
 
 # Local datasets and Kaggle archives
 data-science-bowl-2018/
+custom_data/*
+!custom_data/.gitkeep
 
 # Training outputs
 models/
