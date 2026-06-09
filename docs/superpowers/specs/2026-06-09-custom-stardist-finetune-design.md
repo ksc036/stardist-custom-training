@@ -53,14 +53,35 @@ This matches the `stage1_train` layout used by Data Science Bowl 2018.
    - warn about skipped folders
    - stop with a clear error if fewer than 2 usable samples exist
 4. Load images and merge per-instance masks into integer instance label images.
-5. Normalize images with percentile normalization.
-6. Split data deterministically into train and validation sets, keeping at least one validation image.
-7. Create a StarDist2D model with the same architecture as the base model.
-8. Load fixed base weights from `models/stardist_dsb2018_from_scratch/weights_best.h5`.
-9. Freeze most layers and keep only the last configurable number of layers trainable.
-10. Fine-tune with a low learning rate and augmentation.
-11. Optimize thresholds on validation data when validation data exists.
-12. Show a validation prediction sample.
+5. Standardize image and mask dimensions to `1536 x 1024` pixels, interpreted as width x height.
+6. Normalize images with percentile normalization.
+7. Split data deterministically into train and validation sets, keeping at least one validation image.
+8. Create a StarDist2D model with the same architecture as the base model.
+9. Load fixed base weights from `models/stardist_dsb2018_from_scratch/weights_best.h5`.
+10. Freeze most layers and keep only the last configurable number of layers trainable.
+11. Fine-tune with a low learning rate and augmentation.
+12. Optimize thresholds on validation data when validation data exists.
+13. Show a validation prediction sample.
+
+## Dimension Standardization
+
+Custom images are expected to be `1536 x 1024` pixels. In code this is represented as `(height=1024, width=1536)`.
+
+The notebook will define:
+
+- `TARGET_WIDTH = 1536`
+- `TARGET_HEIGHT = 1024`
+- `TARGET_SHAPE = (TARGET_HEIGHT, TARGET_WIDTH)`
+
+If an image already has this shape, preprocessing leaves it unchanged.
+
+If an image or mask has a different shape:
+
+- source images are resized to `TARGET_SHAPE` with bilinear interpolation and anti-aliasing
+- binary instance masks are resized to `TARGET_SHAPE` with nearest-neighbor interpolation
+- resized masks are thresholded back to boolean masks before merging into instance labels
+
+Nearest-neighbor resizing is required for masks so that instance boundaries do not become fractional labels.
 
 ## Fine-Tuning Defaults
 
@@ -98,7 +119,7 @@ The notebook will fail early with clear messages when:
 - `weights_best.h5` is missing
 - no usable custom samples are found
 - fewer than 2 usable samples are available
-- a mask shape does not match its image shape
+- a mask shape does not match its image shape before preprocessing in a way that cannot be resized
 
 It will create `custom_data/` if missing, then raise an instructional error explaining the expected folder layout.
 
@@ -117,5 +138,6 @@ Implementation should be checked by:
 - confirming `custom_data/` is created
 - confirming notebook JSON is valid
 - confirming the notebook references the fixed base model path
+- confirming preprocessing standardizes images and masks to `(1024, 1536)`
 - confirming fine-tuned outputs use a timestamped model name
 - optionally running the notebook only after valid custom data is present
